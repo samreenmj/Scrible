@@ -11,7 +11,7 @@ interface User {
   userId: string
 }
 
-const users: User[] = [];
+let users: User[] = [];
 
 function checkUser(token: string): string | null {
   try {
@@ -52,6 +52,10 @@ wss.on('connection', function connection(ws, request) {
     ws
   })
 
+  ws.on('close', () => {
+    users = users.filter(user => user.ws !== ws);
+  });
+
   ws.on('message', async function message(data) {
     let parsedData;
     if (typeof data !== "string") {
@@ -89,7 +93,7 @@ wss.on('connection', function connection(ws, request) {
       });
 
       users.forEach(user => {
-        if (user.rooms.includes(roomId)) {
+        if (user.rooms.includes(roomId) && user.ws.readyState === WebSocket.OPEN) {
           user.ws.send(JSON.stringify({
             type: "chat",
             message: message,
@@ -102,4 +106,3 @@ wss.on('connection', function connection(ws, request) {
   });
 
 });
-

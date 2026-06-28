@@ -35,7 +35,7 @@ export function AuthPage({isSignin}: {
 
             if (isSignin) {
                 setToken(response.data.token);
-                router.push("/");
+                router.push("/rooms");
             } else {
                 removeToken();
                 router.push("/signin");

@@ -1,72 +1,95 @@
-import { initDraw } from "@/draw";
+"use client";
+
 import { useEffect, useRef, useState } from "react";
-import { IconButton } from "./IconButton";
 import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
+
 import { Game } from "@/draw/Game";
+import { IconButton } from "./IconButton";
 
 export type Tool = "circle" | "rect" | "pencil";
 
 export function Canvas({
-    roomId,
-    socket
+  roomId,
+  socket,
 }: {
-    socket: WebSocket;
-    roomId: string;
+  socket: WebSocket;
+  roomId: string;
 }) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [game, setGame] = useState<Game>();
-    const [selectedTool, setSelectedTool] = useState<Tool>("circle")
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    useEffect(() => {
-        game?.setTool(selectedTool);
-    }, [selectedTool, game]);
+  const [game, setGame] = useState<Game>();
+  const [selectedTool, setSelectedTool] = useState<Tool>("circle");
 
-    useEffect(() => {
+  useEffect(() => {
+    game?.setTool(selectedTool);
+  }, [selectedTool, game]);
 
-        if (canvasRef.current) {
-            const g = new Game(canvasRef.current, roomId, socket);
-            setGame(g);
+  useEffect(() => {
+    if (!canvasRef.current) return;
 
-            return () => {
-                g.destroy();
-            }
-        }
+    const g = new Game(canvasRef.current, roomId, socket);
+    setGame(g);
 
+    return () => {
+      g.destroy();
+    };
+  }, [roomId, socket]);
 
-    }, [canvasRef]);
-
-    return <div style={{
+  return (
+    <div
+      style={{
         height: "100vh",
-        overflow: "hidden"
-    }}>
-        <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
-        <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
+        overflow: "hidden",
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        width={window.innerWidth}
+        height={window.innerHeight}
+      />
+
+      <Topbar
+        selectedTool={selectedTool}
+        setSelectedTool={setSelectedTool}
+      />
     </div>
+  );
 }
 
-function Topbar({selectedTool, setSelectedTool}: {
-    selectedTool: Tool,
-    setSelectedTool: (s: Tool) => void
+function Topbar({
+  selectedTool,
+  setSelectedTool,
+}: {
+  selectedTool: Tool;
+  setSelectedTool: (tool: Tool) => void;
 }) {
-    return <div style={{
-            position: "fixed",
-            top: 10,
-            left: 10
-        }}>
-            <div className="flex gap-t">
-                <IconButton 
-                    onClick={() => {
-                        setSelectedTool("pencil")
-                    }}
-                    activated={selectedTool === "pencil"}
-                    icon={<Pencil />}
-                />
-                <IconButton onClick={() => {
-                    setSelectedTool("rect")
-                }} activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon />} ></IconButton>
-                <IconButton onClick={() => {
-                    setSelectedTool("circle")
-                }} activated={selectedTool === "circle"} icon={<Circle />}></IconButton>
-            </div>
-        </div>
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 10,
+        left: 10,
+      }}
+    >
+      <div className="flex gap-2">
+        <IconButton
+          icon={<Pencil />}
+          activated={selectedTool === "pencil"}
+          onClick={() => setSelectedTool("pencil")}
+        />
+
+        <IconButton
+          icon={<RectangleHorizontalIcon />}
+          activated={selectedTool === "rect"}
+          onClick={() => setSelectedTool("rect")}
+        />
+
+        <IconButton
+          icon={<Circle />}
+          activated={selectedTool === "circle"}
+          onClick={() => setSelectedTool("circle")}
+        />
+      </div>
+    </div>
+  );
 }
